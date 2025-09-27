@@ -36,6 +36,13 @@ type fridayOptions struct {
 
 var opts = &fridayOptions{}
 
+func (o *fridayOptions) Validate() error {
+	if len(o.SubjectPath) == 0 {
+		return fmt.Errorf("no subject files specified")
+	}
+	return nil
+}
+
 func main() {
 	root := &cobra.Command{
 		Use:   "fritoto [flags] file [file...]",
@@ -55,7 +62,6 @@ func main() {
 	_ = root.MarkFlagRequired("subject") //nolint:errcheck
 
 	if err := root.Execute(); err != nil {
-
 		color.New(color.FgHiYellow).Fprintf(os.Stderr, "%s error: %v\n", color.RedString("✖"), err) //nolint:errcheck
 		os.Exit(1)
 	}
@@ -67,6 +73,9 @@ func IsItFriday(buildTime time.Time) bool {
 }
 
 func runGenerate(cmd *cobra.Command, args []string) error {
+	if err := opts.Validate(); err != nil {
+		return err
+	}
 	fmt.Println()
 	color.New(color.FgHiWhite, color.Bold).Println("  ✨ Generating in-toto attestation") //nolint:errcheck
 	fmt.Println()
