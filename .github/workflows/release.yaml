@@ -32,6 +32,11 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
 
+      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
       - name: Verify Build SLSA Source Level 3+
         uses: carabiner-dev/actions/ampel/verify@HEAD
         with:
@@ -42,11 +47,6 @@ jobs:
 
       - name: Attest Test Results
         uses: carabiner-dev/actions/beaker/tests@HEAD
-
-      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
-        with:
-          go-version-file: go.mod
-          cache: false
 
       - name: Install tejolote
         uses: kubernetes-sigs/release-actions/setup-tejolote@a30d93cf2aa029e1e4c8a6c79f766aebf429fddb # v0.3.1
