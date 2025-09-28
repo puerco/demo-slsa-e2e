@@ -36,7 +36,7 @@ jobs:
         uses: carabiner-dev/actions/ampel/verify@HEAD
         with:
           subject: "sha1:${{ github.sha }}"
-          policy: "git+https://github.com/carabiner-dev/policies#vsa/slsa-source-level3.json"
+          policy: "git+https://github.com/carabiner-dev/policies#vsa/slsa-source-level1.json"
           collector: "note:https://github.com/${{ github.repository }}@${{ github.sha }}"
           signer: "sigstore::https://token.actions.githubusercontent.com::https://github.com/slsa-framework/source-actions/.github/workflows/compute_slsa_source.yml@refs/heads/main"
 
