@@ -15,9 +15,9 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write
-      id-token: write
-      attestations: write
+      contents: write     # To create the release
+      id-token: write     # To sign artifacts
+      attestations: write # To push attestations
       
     steps:
       - name: Setup bnd
@@ -33,7 +33,7 @@ jobs:
           fetch-depth: 1
 
       - name: Verify Build SLSA Source Level 3+
-        uses: carabiner-dev/actions/ampel/verify
+        uses: carabiner-dev/actions/ampel/verify@HEAD
         with:
           subject: "sha1:${{ github.sha }}"
           policy: "git+https://github.com/carabiner-dev/policies#vsa/slsa-source-level3.json"
@@ -41,7 +41,7 @@ jobs:
           signer: "sigstore::https://token.actions.githubusercontent.com::https://github.com/slsa-framework/source-actions/.github/workflows/compute_slsa_source.yml@refs/heads/main"
 
       - name: Attest Test Results
-        uses: carabiner-dev/actions/beaker/tests
+        uses: carabiner-dev/actions/beaker/tests@HEAD
 
       - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
         with:
