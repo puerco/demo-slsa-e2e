@@ -1,0 +1,84 @@
+# SPDX-FileCopyrightText: Copyright 2025 Carabiner Systems, Inc
+# SPDX-License-Identifier: Apache-2.0
+
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+permissions:
+  contents: read
+  
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+      
+    steps:
+      - name: Setup bnd
+        uses: carabiner-dev/actions/install/bnd@HEAD
+
+      - name: Setup unpack
+        uses: carabiner-dev/actions/install/unpack@HEAD
+
+      - name: Check out code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Verify Build SLSA Source Level 3+
+        uses: carabiner-dev/actions/ampel/verify
+        with:
+          subject: "sha1:${{ github.sha }}"
+          policy: "git+https://github.com/carabiner-dev/policies#vsa/slsa-source-level3.json"
+          collector: "note:https://github.com/${{ github.repository }}@${{ github.sha }}"
+          signer: "sigstore::https://token.actions.githubusercontent.com::https://github.com/slsa-framework/source-actions/.github/workflows/compute_slsa_source.yml@refs/heads/main"
+
+      - name: Attest Test Results
+        uses: carabiner-dev/actions/beaker/tests
+
+      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Install tejolote
+        uses: kubernetes-sigs/release-actions/setup-tejolote@a30d93cf2aa029e1e4c8a6c79f766aebf429fddb # v0.3.1
+
+      - name: Set tag output
+        id: tag
+        run: echo "tag_name=${GITHUB_REF#refs/*/}" >> "$GITHUB_OUTPUT"
+  
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a # v6.4.0
+        id: goreleaser
+        with:
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate SBOM
+        run: |
+          mkdir attestations
+          unpack extract . --ignore-other-codebases -f spdx --attest > attestations/spdx.intoto.json
+          unpack extract . --ignore-other-codebases -f spdx > attestations/${{ github.event.repository.name }}-${{ steps.tag.outputs.TAG }}.spdx.json
+      
+      - name: Generate Provenance
+        id: tejolote
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+            tejolote attest --artifacts github://${{github.repository}}/${{ steps.tag.outputs.tag_name }} github://${{github.repository}}/"${GITHUB_RUN_ID}" --output attestations/provenance.json
+            bnd statement attestations/provenance.json -o attestations/bnd-${{ steps.tag.outputs.tag_name }}.provenance.json
+            bnd pack attestations/ > attestations.jsonl
+            gh release upload ${{ steps.tag.outputs.tag_name }} attestations.jsonl
+            gh release upload ${{ steps.tag.outputs.tag_name }} attestations/${{ github.event.repository.name }}-${{ steps.tag.outputs.TAG }}.spdx.json
+            bnd push github ${{github.repository}} attestations/bnd-${{ steps.tag.outputs.tag_name }}.provenance.json
+
