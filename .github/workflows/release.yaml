@@ -78,7 +78,7 @@ jobs:
         uses: carabiner-dev/actions/ampel/verify@HEAD
         with:
           subject: "${{ steps.digest.outputs.builder }}"
-          policy: "git+https://github.com/carabiner-dev/policies#sets/slsa/slsa-build-3.json "
+          policy: "git+https://github.com/carabiner-dev/policies#sets/slsa/slsa-build-3.json"
           collector: "coci:cgr.dev/chainguard/go"
           signer: "sigstore::https://token.actions.githubusercontent.com::https://github.com/slsa-framework/source-actions/.github/workflows/compute_slsa_source.yml@refs/heads/main"
 
