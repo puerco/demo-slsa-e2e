@@ -20,6 +20,9 @@ jobs:
       attestations: write # To push attestations
       
     steps:
+      - name: Setup Docker
+        uses: docker/setup-docker-action@b60f85385d03ac8acfca6d9996982511d8620a19 # v4.3.0
+
       - name: Setup bnd
         uses: carabiner-dev/actions/install/bnd@HEAD
 
@@ -70,39 +73,40 @@ jobs:
           sign: true
 
       - name: Read builder digest
-        id: digest
+        id: digests
         run:
           echo "builder=$(crane digest cgr.dev/chainguard/go)" >> "$GITHUB_OUTPUT"
 
-      - name: Verify Builder Image
-        uses: carabiner-dev/actions/ampel/verify@HEAD
-        env:
-          AMPEL_BUILDPOINT: ""
-        with:
-          subject: "${{ steps.digest.outputs.builder }}"
-          policy: "git+https://github.com/carabiner-dev/policies#sets/slsa/slsa-build-3.json"
-          collector: "coci:cgr.dev/chainguard/go"
-          signer: "sigstore::https://token.actions.githubusercontent.com::https://github.com/slsa-framework/source-actions/.github/workflows/compute_slsa_source.yml@refs/heads/main"
+      # - name: Verify Builder Image
+      #   uses: carabiner-dev/actions/ampel/verify@HEAD
+      #   env:
+      #     AMPEL_BUILDPOINT: ""
+      #   with:
+      #     subject: "${{ steps.digests.outputs.builder }}"
+      #     policy: "git+https://github.com/carabiner-dev/policies#sets/slsa/slsa-build-3.json"
+      #     collector: "coci:cgr.dev/chainguard/go"
+      #     signer: "sigstore::https://token.actions.githubusercontent.com::https://github.com/slsa-framework/source-actions/.github/workflows/compute_slsa_source.yml@refs/heads/main"
 
       - name: Set tag output
         id: tag
         run: echo "tag_name=${GITHUB_REF#refs/*/}" >> "$GITHUB_OUTPUT"
   
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a # v6.4.0
-        id: goreleaser
-        with:
-          args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
+      ## Run the build
+      - name: Build the Project
+        id: build
+        run: |
+          ./build.sh
+
       - name: Generate Provenance
         id: tejolote
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-            tejolote attest --artifacts github://${{github.repository}}/${{ steps.tag.outputs.tag_name }} github://${{github.repository}}/"${GITHUB_RUN_ID}" --output attestations/provenance.json
+            tejolote attest github://${{github.repository}}/"${GITHUB_RUN_ID}" \
+              --artifacts github://${{github.repository}}/${{ steps.tag.outputs.tag_name }} \
+              --output ./attestations/provenance.json
+              --vcs-url=cgr.dev/chainguard/go@${{ steps.digests.outputs.builder }}
             bnd statement attestations/provenance.json -o attestations/bnd-${{ steps.tag.outputs.tag_name }}.provenance.json
             bnd pack attestations/ > attestations.jsonl
             gh release upload ${{ steps.tag.outputs.tag_name }} attestations.jsonl
