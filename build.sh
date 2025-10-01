@@ -92,7 +92,7 @@ build_for_platform() {
         -e GOMODCACHE=/tmp/go-cache/mod \
         -e CGO_ENABLED=0 \
         "$GO_IMAGE" \
-        build -v -o "$output_path" .
+        build -o "$output_path" .
     
     if [ $? -eq 0 ]; then
         print_info "✓ Successfully built ${goos}/${goarch} -> $output_path"
