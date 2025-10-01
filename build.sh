@@ -14,8 +14,8 @@ OUTPUT_DIR="./bin"
 
 # Target platforms for cross-compilation
 PLATFORMS=(
-    "linux/amd64"
     "linux/arm64"
+    "linux/amd64"
     "darwin/amd64"
     "darwin/arm64"
     "windows/amd64"
@@ -121,7 +121,6 @@ CACHE_DIR=$(mktemp -d)
 # trap "rm -rf $CACHE_DIR || :" EXIT
 
 print_info "Using cache directory: $CACHE_DIR"
-print_info "Building for platforms: ${PLATFORMS[*]}"
 
 # Build for each platform
 SUCCESSFUL_BUILDS=0
@@ -129,11 +128,11 @@ FAILED_BUILDS=0
 
 for platform in "${PLATFORMS[@]}"; do
     IFS='/' read -r goos goarch <<< "$platform"
-    
+    print_info " 🚧 Building for ${goos}/${goarch}..."
     if build_for_platform "$goos" "$goarch" "$MODULE_NAME"; then
-        ((SUCCESSFUL_BUILDS++))
+        SUCCESSFUL_BUILDS=$((SUCCESSFUL_BUILDS + 1))
     else
-        ((FAILED_BUILDS++))
+        FAILED_BUILDS=$((FAILED_BUILDS + 1))
     fi
     echo  
     echo 
