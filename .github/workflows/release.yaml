@@ -54,7 +54,7 @@ jobs:
       - name: Export source attestations
         id: export-source-attestations
         run: |
-          bnd read ../bnd/bnd read note:${{ github.repository }}@${{ github.sha }} --jsonl >> .attestations/bundle.jsonl
+          bnd read note:${{ github.repository }}@${{ github.sha }} --jsonl >> .attestations/bundle.jsonl
 
       - name: Generate SBOM
         run: |
