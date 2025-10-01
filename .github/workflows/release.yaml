@@ -85,7 +85,7 @@ jobs:
           # The verification subjest: The image digest
           subject: "${{ steps.digests.outputs.builder }}"
           # Use the modified policy set
-          policy: "policies/slsa-build-3.json"
+          policy: "policies/verify-builder-image-slsa3.set.json"
           # Collect builder attestations attached to the image
           collector: "coci:cgr.dev/chainguard/go"
           # We don't specify the signer here, it's baked in the policy
