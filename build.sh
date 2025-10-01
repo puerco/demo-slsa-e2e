@@ -116,7 +116,9 @@ print_info "Module name: $MODULE_NAME"
 
 # Create temporary cache directory
 CACHE_DIR=$(mktemp -d)
-trap "rm -rf $CACHE_DIR || :" EXIT
+
+# We don't really need to delete the temp dir, but just in case
+# trap "rm -rf $CACHE_DIR || :" EXIT
 
 print_info "Using cache directory: $CACHE_DIR"
 print_info "Building for platforms: ${PLATFORMS[*]}"
