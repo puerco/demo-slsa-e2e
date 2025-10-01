@@ -77,15 +77,19 @@ jobs:
         run:
           echo "builder=$(crane digest cgr.dev/chainguard/go)" >> "$GITHUB_OUTPUT"
 
-      # - name: Verify Builder Image
-      #   uses: carabiner-dev/actions/ampel/verify@HEAD
-      #   env:
-      #     AMPEL_BUILDPOINT: ""
-      #   with:
-      #     subject: "${{ steps.digests.outputs.builder }}"
-      #     policy: "git+https://github.com/carabiner-dev/policies#sets/slsa/slsa-build-3.json"
-      #     collector: "coci:cgr.dev/chainguard/go"
-      #     signer: "sigstore::https://token.actions.githubusercontent.com::https://github.com/slsa-framework/source-actions/.github/workflows/compute_slsa_source.yml@refs/heads/main"
+      - name: Verify Builder Image
+        uses: carabiner-dev/actions/ampel/verify@HEAD
+        env:
+          AMPEL_BUILDPOINT: ""
+        with:
+          # The verification subjest: The image digest
+          subject: "${{ steps.digests.outputs.builder }}"
+          # Use the modified policy set
+          policy: "policies/slsa-build-3.json"
+          # Collect builder attestations attached to the image
+          collector: "coci:cgr.dev/chainguard/go"
+          # We don't specify the signer here, it's baked in the policy
+          # signer: "sigstore::https://token.actions.githubusercontent.com::https://github.com/slsa-framework/source-actions/.github/workflows/compute_slsa_source.yml@refs/heads/main"
 
       - name: Set tag output
         id: tag
