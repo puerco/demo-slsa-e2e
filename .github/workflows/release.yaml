@@ -48,7 +48,7 @@ jobs:
         name: Create Attestation Directory
         run: mkdir .attestations
 
-      - name: Verify Build Point Commit to be SLSA Source Level 3+
+      - name: 🔴🟡🟢 Verify Build Point Commit to be SLSA Source Level 3+
         uses: carabiner-dev/actions/ampel/verify@HEAD
         with:
           subject: "sha1:${{ github.sha }}"
@@ -57,17 +57,18 @@ jobs:
           signer: "sigstore::https://token.actions.githubusercontent.com::https://github.com/slsa-framework/source-actions/.github/workflows/compute_slsa_source.yml@refs/heads/main"
           attest: false
 
-      - name: Export source attestations
+      - name: 🥨 Export source attestations
         id: export-source-attestations
         run: |
-          bnd read note:${{ github.repository }}@${{ github.sha }} --jsonl >> .attestations/bundle.jsonl
+          bnd read note:${{ github.repository }}@${{ github.sha }} --jsonl >> .attestations/attestations.bundle.jsonl
 
-      - name: Generate SBOM
+      - name: 📜 Generate SBOM
         run: |
           mkdir attestations
-          unpack extract . --ignore-other-codebases -f spdx --attest > attestations/spdx.intoto.json
+          unpack extract . --ignore-other-codebases -f spdx --attest > .attestations/spdx.intoto.json
+          bnd statement .attestations/spdx.intoto.json >> .attestations/attestations.bundle.jsonl
 
-      - name: Attest Test Results
+      - name: 🧪 Attest Test Results
         uses: carabiner-dev/actions/beaker/tests@HEAD
         with:
           output: .attestations/tests.intoto.json
@@ -78,7 +79,7 @@ jobs:
         run:
           echo "builder=$(crane digest cgr.dev/chainguard/go)" >> "$GITHUB_OUTPUT"
 
-      - name: Verify Builder Image
+      - name: 🔴🟡🟢 Verify Builder Image
         uses: carabiner-dev/actions/ampel/verify@HEAD
         with:
           # The verification subjest: The image digest
@@ -91,29 +92,50 @@ jobs:
           # signer: "sigstore::https://token.actions.githubusercontent.com::https://github.com/slsa-framework/source-actions/.github/workflows/compute_slsa_source.yml@refs/heads/main"
           attest: false
 
+      - name: 🔴🟡🟢 Re-Verify to Generate Builder VSA
+        # Here, we run the verification again just to generate the VSA as required.
+        # By the SLSA e2e RFE. This should probably be an option in the verify 
+        # action but we don't currently have a way of doing it.
+        run: |
+          ampel verify sha256:50b45e309db68372d282ea8c7c87a2d630523c09e9c16cbe30ea90b343eabd79 \
+          --policy policies/verify-builder-image-slsa3.set.json \
+          -c coci:cgr.dev/chainguard/go --format="vsa" >> .attestations/builder-vsa.intoto.json
+          bnd statement .attestations/builder-vsa.intoto.json >> .attestations/attestations.bundle.jsonl
+          rm .attestations/builder-vsa.intoto.json
+
       - name: Set tag output
         id: tag
         run: echo "tag_name=${GITHUB_REF#refs/*/}" >> "$GITHUB_OUTPUT"
   
-      ## Run the build
-      - name: Build the Project
+      ## Run the build script
+      - name: 👷‍♀️ Build the Project
         id: build
         run: |
           ./build.sh
 
-      - name: Generate Provenance
-        id: tejolote
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Here, we fen
+      - name: 🌶️ Generate SLSA Provenance Attestation
+        id: tejolote        
         run: |
+            # Generate the provenance attestation with the Tejolote attester
             tejolote attest github://${{github.repository}}/"${GITHUB_RUN_ID}" \
               --artifacts github://${{github.repository}}/${{ steps.tag.outputs.tag_name }} \
               --output ./attestations/provenance.json
               --vcs-url=cgr.dev/chainguard/go@${{ steps.digests.outputs.builder }}
-            bnd statement attestations/provenance.json -o attestations/bnd-${{ steps.tag.outputs.tag_name }}.provenance.json
-            bnd pack attestations/ > attestations.jsonl
-            gh release upload ${{ steps.tag.outputs.tag_name }} attestations.jsonl
-            gh release upload ${{ steps.tag.outputs.tag_name }} attestations/${{ github.event.repository.name }}-${{ steps.tag.outputs.TAG }}.spdx.json
-            bnd push github ${{github.repository}} attestations/bnd-${{ steps.tag.outputs.tag_name }}.provenance.json
+
+            # Sign the provenance attestation
+            bnd statement ./attestations/provenance.json >> .attestations/attestations.bundle.jsonl
+            
+      - name: 🥨 Pack Remaining Attestations
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run:
+          # Bundle the remaining atts
+          bnd pack -o .attestations/rest.bundle.json .attestations/tests.intoto.json
+
+          cat rest.bundle.json >> attestations.bundle.jsonl
+
+          gh release upload ${{ steps.tag.outputs.tag_name }} .attestations/attestations.bundle.jsonl
+          gh release upload ${{ steps.tag.outputs.tag_name }} bin/*
 
