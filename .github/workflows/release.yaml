@@ -48,13 +48,14 @@ jobs:
         name: Create Attestation Directory
         run: mkdir .attestations
 
-      - name: Verify Build SLSA Source Level 3+
+      - name: Verify Build Point Commit to be SLSA Source Level 3+
         uses: carabiner-dev/actions/ampel/verify@HEAD
         with:
           subject: "sha1:${{ github.sha }}"
           policy: "git+https://github.com/carabiner-dev/policies#vsa/slsa-source-level1.json"
           collector: "note:https://github.com/${{ github.repository }}@${{ github.sha }}"
           signer: "sigstore::https://token.actions.githubusercontent.com::https://github.com/slsa-framework/source-actions/.github/workflows/compute_slsa_source.yml@refs/heads/main"
+          attestation: false
 
       - name: Export source attestations
         id: export-source-attestations
@@ -88,6 +89,7 @@ jobs:
           collector: "coci:cgr.dev/chainguard/go"
           # We don't specify the signer here, it's baked in the policy
           # signer: "sigstore::https://token.actions.githubusercontent.com::https://github.com/slsa-framework/source-actions/.github/workflows/compute_slsa_source.yml@refs/heads/main"
+          attestation: false
 
       - name: Set tag output
         id: tag
