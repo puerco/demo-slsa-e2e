@@ -26,6 +26,8 @@ jobs:
       - name: Setup unpack
         uses: carabiner-dev/actions/install/unpack@HEAD
 
+      - uses: imjasonh/setup-crane@v31b88efe9de28ae0ffa220711af4b60be9435f6e # 0.4
+
       - name: Check out code
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
@@ -49,11 +51,34 @@ jobs:
           collector: "note:https://github.com/${{ github.repository }}@${{ github.sha }}"
           signer: "sigstore::https://token.actions.githubusercontent.com::https://github.com/slsa-framework/source-actions/.github/workflows/compute_slsa_source.yml@refs/heads/main"
 
+      - name: Export source attestations
+        id: export-source-attestations
+        run: |
+          bnd read ../bnd/bnd read -c note:${{ github.repository }}@${{ github.sha }} --jsonl >> .attestations/bundle.jsonl
+
+      - name: Generate SBOM
+        run: |
+          mkdir attestations
+          unpack extract . --ignore-other-codebases -f spdx --attest > attestations/spdx.intoto.json
+
       - name: Attest Test Results
         uses: carabiner-dev/actions/beaker/tests@HEAD
         with:
           output: .attestations/tests.intoto.json
           sign: true
+
+      - name: Read builder digest
+        id: digest
+        run:
+          echo "builder=$(crane digest cgr.dev/chainguard/go)" >> "$GITHUB_OUTPUT"
+
+      - name: Verify Builder Image
+        uses: carabiner-dev/actions/ampel/verify@HEAD
+        with:
+          subject: "${{ steps.digest.outputs.builder }}"
+          policy: "git+https://github.com/carabiner-dev/policies#slsa/slsa-source-level1.json"
+          collector: "coci:cgr.dev/chainguard/go"
+          signer: "sigstore::https://token.actions.githubusercontent.com::https://github.com/slsa-framework/source-actions/.github/workflows/compute_slsa_source.yml@refs/heads/main"
 
       - name: Install tejolote
         uses: kubernetes-sigs/release-actions/setup-tejolote@a30d93cf2aa029e1e4c8a6c79f766aebf429fddb # v0.3.1
@@ -69,12 +94,6 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Generate SBOM
-        run: |
-          mkdir attestations
-          unpack extract . --ignore-other-codebases -f spdx --attest > attestations/spdx.intoto.json
-          unpack extract . --ignore-other-codebases -f spdx > attestations/${{ github.event.repository.name }}-${{ steps.tag.outputs.TAG }}.spdx.json
       
       - name: Generate Provenance
         id: tejolote
