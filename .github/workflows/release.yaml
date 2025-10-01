@@ -28,6 +28,8 @@ jobs:
 
       - uses: imjasonh/setup-crane@31b88efe9de28ae0ffa220711af4b60be9435f6e # 0.4
 
+      - uses: kubernetes-sigs/release-actions/setup-tejolote@a30d93cf2aa029e1e4c8a6c79f766aebf429fddb # v0.3.1
+
       - name: Check out code
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
@@ -76,12 +78,9 @@ jobs:
         uses: carabiner-dev/actions/ampel/verify@HEAD
         with:
           subject: "${{ steps.digest.outputs.builder }}"
-          policy: "git+https://github.com/carabiner-dev/policies#slsa/slsa-source-level1.json"
+          policy: "git+https://github.com/carabiner-dev/policies#sets/slsa/slsa-build-3.json "
           collector: "coci:cgr.dev/chainguard/go"
           signer: "sigstore::https://token.actions.githubusercontent.com::https://github.com/slsa-framework/source-actions/.github/workflows/compute_slsa_source.yml@refs/heads/main"
-
-      - name: Install tejolote
-        uses: kubernetes-sigs/release-actions/setup-tejolote@a30d93cf2aa029e1e4c8a6c79f766aebf429fddb # v0.3.1
 
       - name: Set tag output
         id: tag
