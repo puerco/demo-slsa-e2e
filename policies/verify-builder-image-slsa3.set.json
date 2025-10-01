@@ -10,6 +10,17 @@
         ]
     },
     "common": {
+        "context": {
+            "buildPoint": {
+                "value": "(this is not set in the image attestations)"
+            },
+            "builderId": {
+                "value": "https://github.com/chainguard-dev/terraform-provider-apko"
+            },
+            "buildType": {
+                "value": "https://apko.dev/slsa-build-type@v1"
+            }
+        },
         "identities": [
             {
                 "sigstore": {

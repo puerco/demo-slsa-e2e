@@ -79,8 +79,6 @@ jobs:
 
       - name: Verify Builder Image
         uses: carabiner-dev/actions/ampel/verify@HEAD
-        env:
-          AMPEL_BUILDPOINT: ""
         with:
           # The verification subjest: The image digest
           subject: "${{ steps.digests.outputs.builder }}"
