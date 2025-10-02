@@ -135,7 +135,7 @@ jobs:
             # Generate the provenance attestation with the Tejolote attester
             tejolote attest github://${{github.repository}}/"${GITHUB_RUN_ID}" \
               --artifacts file:$(pwd)/bin/ \
-              --output .attestations/provenance.json
+              --output .attestations/provenance.json \
               --vcs-url=cgr.dev/chainguard/go@${{ steps.digests.outputs.builder }}
 
             # Sign the provenance attestation
