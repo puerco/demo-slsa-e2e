@@ -32,6 +32,8 @@ jobs:
       - uses: imjasonh/setup-crane@31b88efe9de28ae0ffa220711af4b60be9435f6e # 0.4
 
       - uses: kubernetes-sigs/release-actions/setup-tejolote@a30d93cf2aa029e1e4c8a6c79f766aebf429fddb # v0.3.1
+        with:
+          tejolote-release: 'v0.4.1'
 
       - uses: openvex/setup-vexctl@main
         with:
@@ -138,7 +140,7 @@ jobs:
             # Generate the provenance attestation with the Tejolote attester
             tejolote attest github://${{github.repository}}/"${GITHUB_RUN_ID}" \
               --artifacts file:$(pwd)/bin/ \
-              --output .attestations/provenance.json \
+              --output .attestations/provenance.json --slsa="1.0" \
               --vcs-url=cgr.dev/chainguard/go@${{ steps.digests.outputs.builder }}
 
             # Sign the provenance attestation
