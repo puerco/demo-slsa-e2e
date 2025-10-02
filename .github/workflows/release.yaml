@@ -182,7 +182,13 @@ jobs:
           # Bundle the remaining atts
           bnd pack -o .attestations/rest.bundle.json .attestations/tests.intoto.json
 
-          cat rest.bundle.json >> attestations.bundle.jsonl
+          cat .attestations/rest.bundle.json >> .attestations/attestations.bundle.jsonl
+
+      - name: Store Attestations in Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: attestations.bundle.jsonl
+          path: .attestations/attestations.bundle.jsonl
 
       - name: 🏁 Publish Release Assets
         id: publish
