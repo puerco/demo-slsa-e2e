@@ -134,7 +134,7 @@ jobs:
         run: |
             # Generate the provenance attestation with the Tejolote attester
             tejolote attest github://${{github.repository}}/"${GITHUB_RUN_ID}" \
-              --artifacts github://${{github.repository}}/${{ steps.tag.outputs.tag_name }} \
+              --artifacts file:./bin/ \
               --output ./attestations/provenance.json
               --vcs-url=cgr.dev/chainguard/go@${{ steps.digests.outputs.builder }}
 
