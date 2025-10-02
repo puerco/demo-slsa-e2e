@@ -76,7 +76,7 @@ build_for_platform() {
         output_path="${output_path}.exe"
     fi
     
-    print_info "Building for ${goos}/${goarch}..."
+    print_info " 🚧 Building for ${goos}/${goarch}..."
     
     # Create platform-specific output directory
     mkdir -p "$output_dir"
@@ -128,7 +128,7 @@ FAILED_BUILDS=0
 
 for platform in "${PLATFORMS[@]}"; do
     IFS='/' read -r goos goarch <<< "$platform"
-    print_info " 🚧 Building for ${goos}/${goarch}..."
+    
     if build_for_platform "$goos" "$goarch" "$MODULE_NAME"; then
         SUCCESSFUL_BUILDS=$((SUCCESSFUL_BUILDS + 1))
     else

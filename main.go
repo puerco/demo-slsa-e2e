@@ -8,6 +8,15 @@ import (
 	"os"
 	"time"
 
+	// Here we force the import of hashicorp/go-getter v1.7.9 which pulls
+	// in CVE-2025-8959 and in the transitives CVE-2020-8912 and CVE-2020-8911.
+	// Since we are only including the module, it does not affect the project,
+	// but it should pop up in the scanners.
+	//
+	// ... perfect for VEXing :)
+	//
+	_ "github.com/hashicorp/go-getter"
+
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
