@@ -135,11 +135,11 @@ jobs:
             # Generate the provenance attestation with the Tejolote attester
             tejolote attest github://${{github.repository}}/"${GITHUB_RUN_ID}" \
               --artifacts file:$(pwd)/bin/ \
-              --output ./attestations/provenance.json
+              --output .attestations/provenance.json
               --vcs-url=cgr.dev/chainguard/go@${{ steps.digests.outputs.builder }}
 
             # Sign the provenance attestation
-            bnd statement ./attestations/provenance.json >> .attestations/attestations.bundle.jsonl
+            bnd statement .attestations/provenance.json >> .attestations/attestations.bundle.jsonl
 
       - name: Generate Vulnerability Scan
         uses: google/osv-scanner-action/osv-scanner-action@e92b5d07338d4f0ba0981dffed17c48976ca4730 # v2.2.3
