@@ -200,8 +200,8 @@ jobs:
       - name: Artifact VSAs
         id: artifact-vsas
         run: |
-            for f in $(ls bin/*); 
-              do  ampel verify "$d" \
+            for binfile in $(ls bin/*); 
+              do  ampel verify "$binfile" \
                 --policy policies/release-preflight-slsa-build.json \
                 --collector jsonl:.attestations/attestations.bundle.jsonl \
                 --format=vsa >> vsa.tmp.json;
