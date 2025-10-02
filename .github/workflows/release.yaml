@@ -179,7 +179,7 @@ jobs:
         run: |
           # Sign the vulnerability scan
           bnd predicate .attestations/osv-results.json  \
-            --type="https://ossf.github.io/osv-schema/results"
+            --type="https://ossf.github.io/osv-schema/results" \
             --subject="sha1:${{ github.sha }}" >> .attestations/attestations.bundle.jsonl
 
           # Bundle the remaining atts
