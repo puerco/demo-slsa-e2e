@@ -200,13 +200,14 @@ jobs:
       - name: Artifact VSAs
         id: artifact-vsas
         run: |
-            for f in $(ls bak/*); 
+            for f in $(ls bin/*); 
               do  ampel verify "$d" \
                 --policy policies/release-preflight-slsa-build.json \
                 --collector jsonl:.attestations/attestations.bundle.jsonl \
                 --format=vsa >> vsa.tmp.json;
                 bnd statement vsa.tmp.json >> .attestations/attestations.bundle.jsonl
                 echo "" >> .attestations/attestations.bundle.jsonl
+                rm -f vsa.tmp.json
             done
 
       - name: Store Attestations in Artifacts
