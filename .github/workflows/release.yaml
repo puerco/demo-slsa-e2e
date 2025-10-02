@@ -35,7 +35,7 @@ jobs:
 
       - uses: openvex/setup-vexctl@main
         with:
-          vexctl-release: '0.4.0'
+          vexctl-release: '0.4.1'
 
       - name: Check out code
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
