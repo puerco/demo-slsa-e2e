@@ -197,7 +197,7 @@ jobs:
           cat .attestations/rest.bundle.json >> .attestations/attestations.bundle.jsonl
           echo "" >> .attestations/attestations.bundle.jsonl
 
-      - name: Artifact VSAs
+      - name: Verify All Artifacts and Generate VSAs
         id: artifact-vsas
         run: |
             echo "$HOME/.carabiner/bin" >> $GITHUB_PATH
@@ -220,12 +220,13 @@ jobs:
           name: attestations.bundle.jsonl
           path: .attestations/attestations.bundle.jsonl
 
-      - name: 🏁 Publish Release Assets
+      - name: 🏁 Publish Release and Upload Assets
         id: publish
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}       
-        run:
+        run: |
+          gh release create ${{ steps.tag.outputs.tag_name }} --generate-notes --latest
           gh release upload ${{ steps.tag.outputs.tag_name }} .attestations/attestations.bundle.jsonl
           for binfile in $(ls bin/*);  do gh release upload ${{ steps.tag.outputs.tag_name }} "$binfile"; done
           
