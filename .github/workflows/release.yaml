@@ -159,7 +159,7 @@ jobs:
         run: |
           vexctl create \
             --product="sha1:${{ github.sha }}" \
-            --subcomponents="pkg:golang/github.com/aws/aws-sdk-go@1.44.122" \
+            --subcomponents="pkg:golang/github.com/aws/aws-sdk-go@v1.44.122" \
             --vuln CVE-2020-8911 \
             -s not_affected -j vulnerable_code_not_in_execute_path \
             --impact-statement="Module imported manually for demo purposes" \
@@ -167,7 +167,7 @@ jobs:
 
           vexctl create \
             --product="sha1:${{ github.sha }}" \
-            --subcomponents="pkg:golang/github.com/aws/aws-sdk-go@1.44.122" \
+            --subcomponents="pkg:golang/github.com/aws/aws-sdk-go@v1.44.122" \
             --vuln CVE-2020-8912 \
             -s not_affected -j vulnerable_code_not_in_execute_path \
             --impact-statement="Module imported manually for demo purposes" \
