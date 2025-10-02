@@ -227,5 +227,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}       
         run:
           gh release upload ${{ steps.tag.outputs.tag_name }} .attestations/attestations.bundle.jsonl
-          gh release upload ${{ steps.tag.outputs.tag_name }} bin/*
+          for binfile in $(ls bin/*);  do gh release upload ${{ steps.tag.outputs.tag_name }} "$binfile"; done
+          
 
