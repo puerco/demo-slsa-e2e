@@ -109,10 +109,13 @@ jobs:
         # By the SLSA e2e RFE. This should probably be an option in the verify 
         # action but we don't currently have a way of doing it.
         run: |
-          ampel verify sha256:50b45e309db68372d282ea8c7c87a2d630523c09e9c16cbe30ea90b343eabd79 \
+          echo "$HOME/.carabiner/bin" >> $GITHUB_PATH
+          $HOME/.carabiner/bin/ampel verify ${{ steps.digests.outputs.builder }} \
           --policy policies/verify-builder-image-slsa3.set.json \
           -c coci:cgr.dev/chainguard/go --format="vsa" >> .attestations/builder-vsa.intoto.json
+
           bnd statement .attestations/builder-vsa.intoto.json >> .attestations/attestations.bundle.jsonl
+
           rm .attestations/builder-vsa.intoto.json
 
       - name: Set tag output
@@ -185,7 +188,7 @@ jobs:
           cat .attestations/rest.bundle.json >> .attestations/attestations.bundle.jsonl
 
       - name: Store Attestations in Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: attestations.bundle.jsonl
           path: .attestations/attestations.bundle.jsonl
