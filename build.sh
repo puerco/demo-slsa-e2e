@@ -14,11 +14,11 @@ OUTPUT_DIR="./bin"
 
 # Target platforms for cross-compilation
 PLATFORMS=(
-    "linux/arm64"
     "linux/amd64"
-    "darwin/amd64"
-    "darwin/arm64"
-    "windows/amd64"
+    # "linux/arm64"
+    # "darwin/amd64"
+    # "darwin/arm64"
+    # "windows/amd64"
 )
 
 # Colors for output
