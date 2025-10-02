@@ -33,6 +33,10 @@ jobs:
 
       - uses: kubernetes-sigs/release-actions/setup-tejolote@a30d93cf2aa029e1e4c8a6c79f766aebf429fddb # v0.3.1
 
+      - uses: openvex/setup-vexctl@main
+        with:
+          vexctl-release: '0.4.0'
+
       - name: Check out code
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
@@ -48,6 +52,10 @@ jobs:
         name: Create Attestation Directory
         run: mkdir .attestations
 
+      ###
+      ###  Source Verification
+      ###
+
       - name: 🔴🟡🟢 Verify Build Point Commit to be SLSA Source Level 3+
         uses: carabiner-dev/actions/ampel/verify@HEAD
         with:
@@ -62,6 +70,10 @@ jobs:
         run: |
           bnd read note:${{ github.repository }}@${{ github.sha }} --jsonl >> .attestations/attestations.bundle.jsonl
 
+      ###
+      ###  Source Verification
+      ###
+      
       - name: 📜 Generate SBOM
         run: |
           mkdir attestations
@@ -125,17 +137,59 @@ jobs:
 
             # Sign the provenance attestation
             bnd statement ./attestations/provenance.json >> .attestations/attestations.bundle.jsonl
+
+      - name: Generate Vulnerability Scan
+        uses: google/osv-scanner-action/osv-scanner-action@e92b5d07338d4f0ba0981dffed17c48976ca4730 # v2.2.3
+        continue-on-error: true
+        with:
+          scan-args: |-
+            --output=.attestations/osv-results.json 
+            --format=json
+            .
+
+      - name: 🪿 Generate VEX Statements
+        id: generate-vex
+        run: |
+          vexctl create \
+            --product="sha1:${{ github.sha }}" \
+            --subcomponents="pkg:golang/github.com/aws/aws-sdk-go@1.44.122" \
+            --vuln CVE-2020-8911 \
+            -s not_affected -j vulnerable_code_not_in_execute_path \
+            --impact-statement="Module imported manually for demo purposes" \
+            --author "Carabiner Systems, Inc (hey@carabiner.dev)" >> .attestations/CVE-2020-8911.openvex.json
+
+          vexctl create \
+            --product="sha1:${{ github.sha }}" \
+            --subcomponents="pkg:golang/github.com/aws/aws-sdk-go@1.44.122" \
+            --vuln CVE-2020-8912 \
+            -s not_affected -j vulnerable_code_not_in_execute_path \
+            --impact-statement="Module imported manually for demo purposes" \
+            --author "Carabiner Systems, Inc (hey@carabiner.dev)" >> .attestations/CVE-2020-8912.openvex.json
+
+          bnd predicate .attestations/CVE-2020-8911.openvex.json \
+            --type="https://openvex.dev/ns/v0.2.0" --subject="sha1:${{ github.sha }}" >> .attestations/attestations.bundle.jsonl
+
+          bnd predicate .attestations/CVE-2020-8912.openvex.json \
+            --type="https://openvex.dev/ns/v0.2.0" --subject="sha1:${{ github.sha }}" >> .attestations/attestations.bundle.jsonl
             
       - name: 🥨 Pack Remaining Attestations
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run:
+        run: |
+          # Sign the vulnerability scan
+          bnd predicate .attestations/osv-results.json  \
+            --type="https://ossf.github.io/osv-schema/results"
+            --subject="sha1:${{ github.sha }}" >> .attestations/attestations.bundle.jsonl
+
           # Bundle the remaining atts
           bnd pack -o .attestations/rest.bundle.json .attestations/tests.intoto.json
 
           cat rest.bundle.json >> attestations.bundle.jsonl
 
+      - name: 🏁 Publish Release Assets
+        id: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}       
+        run:
           gh release upload ${{ steps.tag.outputs.tag_name }} .attestations/attestations.bundle.jsonl
           gh release upload ${{ steps.tag.outputs.tag_name }} bin/*
 
