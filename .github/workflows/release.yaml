@@ -200,14 +200,16 @@ jobs:
       - name: Artifact VSAs
         id: artifact-vsas
         run: |
+            echo "$HOME/.carabiner/bin" >> $GITHUB_PATH
+            ls -l bin/
             for binfile in $(ls bin/*); 
               do  ampel verify "$binfile" \
                 --policy policies/release-preflight-slsa-build.json \
                 --collector jsonl:.attestations/attestations.bundle.jsonl \
                 --format=vsa >> vsa.tmp.json;
-                bnd statement vsa.tmp.json >> .attestations/attestations.bundle.jsonl
-                echo "" >> .attestations/attestations.bundle.jsonl
-                rm -f vsa.tmp.json
+                bnd statement vsa.tmp.json >> .attestations/attestations.bundle.jsonl;
+                echo "" >> .attestations/attestations.bundle.jsonl;
+                rm -f vsa.tmp.json;
             done
 
       - name: Store Attestations in Artifacts
