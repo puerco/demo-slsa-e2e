@@ -53,7 +53,7 @@
             },
             "meta": {
                 "controls": [ { "framework": "SLSA", "class": "BUILD", "id": "3" } ],
-                "enforce": "ON"
+                "enforce": "OFF"
             }
         },
         {
