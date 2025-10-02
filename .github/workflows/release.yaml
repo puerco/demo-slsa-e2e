@@ -197,6 +197,18 @@ jobs:
           cat .attestations/rest.bundle.json >> .attestations/attestations.bundle.jsonl
           echo "" >> .attestations/attestations.bundle.jsonl
 
+      - name: Artifact VSAs
+        id: artifact-vsas
+        run: |
+            for f in $(ls bak/*); 
+              do  ampel verify "$d" \
+                --policy policies/release-preflight-slsa-build.json \
+                --collector jsonl:.attestations/attestations.bundle.jsonl \
+                --format=vsa >> vsa.tmp.json;
+                bnd statement vsa.tmp.json >> .attestations/attestations.bundle.jsonl
+                echo "" >> .attestations/attestations.bundle.jsonl
+            done
+
       - name: Store Attestations in Artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
