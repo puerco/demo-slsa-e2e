@@ -26,9 +26,14 @@
                 "location": { "uri": "git+https://github.com/carabiner-dev/policies#test-results/tests-pass.json" }
             }
         },
-         {
+        {
             "source": {
                 "location": { "uri": "git+https://github.com/carabiner-dev/policies#openvex/no-exploitable-vulns-osv.json" }
+            }
+        },
+        {
+            "source": {
+                "location": { "uri": "git+https://github.com/carabiner-dev/policies#sbom/sbom-exists.json" }
             }
         }
     ]
