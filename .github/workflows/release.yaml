@@ -204,7 +204,7 @@ jobs:
             ls -l bin/
             for binfile in $(ls bin/*); 
             do ampel verify "$binfile" \
-               --policy policies/release-preflight-slsa-build.json \
+               --policy "git+https://github.com/${{ github.repository }}#policies/release-preflight-slsa-build.json" \
                --collector jsonl:.attestations/attestations.bundle.jsonl \
                --attest-results --attest-format=vsa --results-path=vsa.tmp.json \
                --format=html >> $GITHUB_STEP_SUMMARY;
