@@ -129,7 +129,7 @@ FAILED_BUILDS=0
 for platform in "${PLATFORMS[@]}"; do
     IFS='/' read -r goos goarch <<< "$platform"
     
-    if build_for_platform "$goos" "$goarch" "$MODULE_NAME"; then
+    if build_for_platform "$goos" "$goarch" "fritoto"; then
         SUCCESSFUL_BUILDS=$((SUCCESSFUL_BUILDS + 1))
     else
         FAILED_BUILDS=$((FAILED_BUILDS + 1))
