@@ -40,8 +40,8 @@ the release process instead of checking the full body of evidence.
     # The set contains three policies
     policies: [
         {
+            // Ensure the VSAs were generated from an AMPEL verification                
             context: {
-                // Ensure the VSAs were generated from an AMPEL verification
                 verifier: { value: "https://carabiner.dev/ampel@v1" }
             },
             source: {
@@ -49,11 +49,13 @@ the release process instead of checking the full body of evidence.
             }
         },
         {
+            // Ensure a passing SLSA Build 3 verification. 
             source: {
                 location: { uri: "git+https://github.com/carabiner-dev/policies#vsa/slsa-build-level3.json" }
             }
         },
         {
+            // Verify dependencies in the VSA are SLSA Build 3+ 
             source: {
                 location: { uri: "git+https://github.com/carabiner-dev/policies#vsa/slsa-build-deps-level-3.json" }
             }

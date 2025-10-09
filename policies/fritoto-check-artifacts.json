@@ -1,43 +1,59 @@
 {
-    "id": "fritoto-check-artifacts",
-    "meta": {
-        "description": "PolicySet to verify the released artifacts from the Fritoto project"
-    },
-    "common": {
-        "identities": [
-            {
-                "sigstore": {
-                    "issuer": "https://token.actions.githubusercontent.com",
-                    "identity": "https://github.com/slsa-framework/source-actions/.github/workflows/compute_slsa_source.yml@refs/heads/main"
-                }
-            },
-            {
-                "sigstore": {
-                    "mode": "regexp",
-                    "issuer": "https://token.actions.githubusercontent.com",
-                    "identity": "https://github.com/[-a-z]+/demo-slsa-e2e/.github/workflows/release.yaml@refs/tags/v.+"
-                }
-            }
-        ]
-    },
-    "policies": [
-        {
-            "context": {
-                "verifier": { "value": "https://carabiner.dev/ampel@v1" }
-            },
-            "source": {
-                "location": { "uri": "git+https://github.com/carabiner-dev/policies#vsa/vsa-verify-verifier.json" }
-            }
-        },
-        {
-            "source": {
-                "location": { "uri": "git+https://github.com/carabiner-dev/policies#vsa/slsa-build-level3.json" }
-            }
-        },
-        {
-            "source": {
-                "location": { "uri": "git+https://github.com/carabiner-dev/policies#vsa/slsa-build-deps-level-3.json" }
-            }
+  "common": {
+    "identities": [
+      {
+        "sigstore": {
+          "identity": "https://github.com/slsa-framework/source-actions/.github/workflows/compute_slsa_source.yml@refs/heads/main",
+          "issuer": "https://token.actions.githubusercontent.com"
         }
+      },
+      {
+        "sigstore": {
+          "identity": "https://github.com/[-a-z]+/demo-slsa-e2e/.github/workflows/release.yaml@refs/tags/v.+",
+          "issuer": "https://token.actions.githubusercontent.com",
+          "mode": "regexp"
+        }
+      }
     ]
+  },
+  "id": "fritoto-check-artifacts",
+  "meta": {
+    "description": "# fritoto-check-artifacts\n\nPolicySet to verify the released artifacts from the Fritoto project.\n\n## Purpose\n\nThis policy set is inteded to be used by users to verify the published\nartifacts of the Fritoto project. This policy set relies on the VSAs\nattesting to the verifications performed on the built binaries during\nthe release process instead of checking the full body of evidence.\n",
+    "enforce": "ON",
+    "origin": {
+      "digest": {
+        "sha256": "7e09a7ef88513f13b4c8c87560d766d06b17310e55a0637ff5830032fe95c332",
+        "sha512": "fea204a994e0edbdef94563738bf92bf79a38f35ddb7581cc617a71b4664167af898d704714b0fdf403d6dc6e1c0d538c8a0bfb054f7a995e869a8f5b935eae8"
+      },
+      "name": "fritoto-check-artifacts"
+    }
+  },
+  "policies": [
+    {
+      "context": {
+        "verifier": {
+          "value": "https://carabiner.dev/ampel@v1"
+        }
+      },
+      "source": {
+        "location": {
+          "uri": "git+https://github.com/carabiner-dev/policies#vsa/vsa-verify-verifier.json"
+        }
+      }
+    },
+    {
+      "source": {
+        "location": {
+          "uri": "git+https://github.com/carabiner-dev/policies#vsa/slsa-build-level3.json"
+        }
+      }
+    },
+    {
+      "source": {
+        "location": {
+          "uri": "git+https://github.com/carabiner-dev/policies#vsa/slsa-build-deps-level-3.json"
+        }
+      }
+    }
+  ]
 }
